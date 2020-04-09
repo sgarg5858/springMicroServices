@@ -36,6 +36,74 @@ What is MicroService?
  3. instances can be increased, decreased, moved around and so on. Will your application automatically adapt to such changes?
  
  If yes, then your application is cloud native.
+ ********************************************************************************************************************************
+ How to Design Database for microservices?
  
+ 1. Having a single Shared DB is Dangerous.If the DB fails entire application fails.Best Practice is to not to use a shared DB.
  
+ 2.Each MicroService should have it's own set of tables in separate database.
+ 
+ 3. One MicroService should not try to directly access tables owned by another microservice.If there is data dependency then 
+ 
+ microservice should call another srvice through rest api.
+ 
+ 4. Remove Foreign Key Constraints and place tables in separate schemas.
+ 
+ 5.Remove JPA Entity Relationships between entities.
+ 
+ 6. Use Rest API calls to fetch data in case of data dependency.
+ 
+
+ ********************************************************************************************************************************
+ CLOUD CONFIG
+ 
+ As we know In application.properties file we mention properties for database connection and some other properties which will be common 
+ 
+ to all projects which we will make.
+ 
+ 1. Placing these properties in all files will lead to duplication and if we have to do any change then we will we have to make changes
+ 
+    in every project.
+    
+  Solution:
+  
+  We will make git repository where we will create " application.properties " file and we can place all these properties there
+  
+  which will be accessed by all projects and if we make any changes in this file the change will be visible to all.
+  
+  
+  Check application.properties file
+  
+  1. Create new SpringBoot Project Named ConfigServer  with dependency -> Config Server
+  
+ Then add properties>
+ 
+1. server.port=1111
+
+2.spring.application.name=ConfigServer
+
+3.spring.cloud.config.server.git.uri=https://github.com/sgarg5858/spring-MicroServices.git
+# If GitHub is using
+#spring.cloud.config.server.git.uri=https://github.com/PlaygroundConfiguration/SpringMicroservices.git
+
+UserName/Password:
+
+spring.cloud.config.server.git.username=your_github_username
+spring.cloud.config.server.git.password=your_github_password
+
+******************************************************************************************************************************
+Add @EnableConfigServer in the application file of ConfigServer
+******************************************************************************************************************************
+
+Imp: Role Of Config Server:
+
+All the microservices connect to Config Server and recieves configuration file and Config Server Connects to the Github 
+ 
+******************************************************************************************************************************
+Create a bootstrap.properties file in each microservice.
+
+spring.cloud.config.uri=http://localhost:1111
+spring.datasource.username=root
+spring.datasource.password=root
+*******************************************************************************************************************************
  
