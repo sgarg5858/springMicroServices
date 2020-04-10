@@ -170,7 +170,16 @@ spring.datasource.password=root
  
  The Config Server is contacted by the microservices(Clients) Only Once during the start of the project.Therefore any changes after
  
- that will not be reflected in the application.
+ that will not be reflected in the application. This is not a practical Approach.
+ 
+ add  Spring boot start actuator dependency  
+ 
+@RefreshScope and send a post request to localhost:port/actuator/refresh
+
+add in application.properties
+
+management.endpoints.web.exposure.include=*
+
  
  
  *********************************************************************************************************************
@@ -191,3 +200,92 @@ availability. If the cloud config server is unavailable, it will use the propert
 
 If Config Server is Down Then This Property won't start the clients(Microservice).This is to be set at Microservices in BootStrap.prop
 *************************************************************************************************************************************8
+
+
+
+
+*******************************************************************************************************
+Load Balancer:
+*******************************************************************************************************
+Multiple Instances for Microservice who is facing more load.
+
+One way is to put a load balancer in front of the infytel-friend-family instances. This is usually a hardware load balancer.
+
+The infytel-customer would simply send the request to the load balancer and it is the responsibility of the load balancer to decide whom
+
+it should forward the request to. This concept is also known as Server-Side load balancing.
+
+Server side load balancing has several problems:
+
+If the load balancer fails, then we don’t have access to any of the instances of the microservice
+
+Since each microservice would have a dedicated load balancer, we have to manage, track and maintain hundreds of such load balancers.
+
+It increases network latency. Now it would take two hops to reach the service. One to the load balancer and another from the load balancer
+
+ClientSide Load Balancer:
+
+Client side load balancing is a natural solution to this. The client is responsible for deciding to whom it will send the request to.
+
+The client side load balancers are thus software load balancers and not traditional hardware load balancers.
+
+Of course, the downside is we are mixing our application code with load balancing code.
+
+Let's Configure Ribbon:
+1.
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+</dependency>
+
+Add this dependency where you are calling multiples services and load balance
+
+2. Create Configuration class with @Configuration
+
+@Bean @LoadBalanced
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+}
+
+3.Autowire the RestTemplate as @Autowired RestTemplate template; in the CustomerController
+
+4.Add @RibbonClient(name="custribbon") annotation on the CustomerController class
+
+5.Add the below properties in the properties file:
+
+custribbon.ribbon.eureka.enabled=false
+custribbon.ribbon.listOfServers=http://localhost:8301,http://localhost:8302
+
+6.
+List<Long> friends = template.getForObject("http://custribbon/customers/" + phoneNo+"/friends", List.class);
+
+Run the application, with the multiple instances of service which are calling
+*************************************************************************************************************************
+Strategy For Ribbon:
+
+By default, the ribbon uses the NoOpPing strategy for checking if the services are up. 
+
+However, NoOpPing is a dummy strategy. It assumes that all services are up. Thus it will keep pinging the services even if they are 
+
+down. We can configure the Ping strategy so that we stop sending requests to services that are down.
+
+Also, Ribbon by default uses the Round Robin load balancing strategy.
+
+These things can be modified by adding a configuration file.
+
+Set this property in bootstrap.properties
+
+*****************************************************************************************************************
+custribbon.default.NFLoadBalancerRuleClassName=com.netflix.loadbalancer.RandomRule
+*****************************************************************************************************************
+
+
+
+***********************************************************************************************************************************
+Service Discovery:
+***********************************************************************************************************************************
+
+
+ 
+
+ 
