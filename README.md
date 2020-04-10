@@ -363,3 +363,11 @@ If there are changes, it fetches only the updates and the unchanged parts will b
 Every registered client gets access to what is known as a Discovery client.
 
 The discovery client is actually a service endpoint, which returns an enum of all ServiceInstance instances of the clients registered with the service registry.
+**********************************************************************************************************************
+Ribbon With Eureka:
+
+Ribbon is typically used along with Eureka. Earlier we had seen how we can use Ribbon with a static list of servers.
+
+Instead of using a static list, we can get a dynamic list of servers by using it with Eureka.
+
+When used with Eureka, not only will Ribbon get the server list, but it also will depend on the Eureka to know if a service is up or not.
