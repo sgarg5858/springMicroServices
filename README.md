@@ -371,3 +371,14 @@ Ribbon is typically used along with Eureka. Earlier we had seen how we can use R
 Instead of using a static list, we can get a dynamic list of servers by using it with Eureka.
 
 When used with Eureka, not only will Ribbon get the server list, but it also will depend on the Eureka to know if a service is up or not.
+
+Replicas must have different instance id's
+
+eureka.instance.instance-id=${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+
+PlanDTO planDTO=template.getForObject("http://PLAN"+"/plans/"+custDTO.getCurrentPlan().getPlanId(), PlanDTO.class);
+		custDTO.setCurrentPlan(planDTO);
+		
+List<Long> friends1=template.getForObject("http://FRIEND"+"/customers/"+phoneNo+"/friends", List.class);
+		custDTO.setFriendAndFamily(friends1);
