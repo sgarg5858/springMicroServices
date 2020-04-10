@@ -282,10 +282,84 @@ custribbon.default.NFLoadBalancerRuleClassName=com.netflix.loadbalancer.RandomRu
 
 
 ***********************************************************************************************************************************
-Service Discovery:
+Service Discovery: Eureka
 ***********************************************************************************************************************************
 
+You have a service registry to which you can register yourself. To register yourself you have to provide your details like first name
 
- 
+,last name, phone no, etc. Once you register you can discover details of all other registered numbers as well. Now if someone changes
 
- 
+their number, if they register their new number with such a global directory, you again get their updated details automatically.
+
+This is how Service discovery works in microservices as well.Now once it registers itself with the Service Registry two things happen:
+
+1.its details like name, port, host, etc are stored in the service registry
+
+2. list of other registered services become available to it
+
+3.Thus even if one if the services were to get redeployed at a different host and port, the other services need not worry about it.
+
+When the service redeploys, it would simply update its information in the service registry again. 
+
+The other services would discover about its updated details through the service registry.
+
+ ********************************************************************************************************************************
+The details of the Eureka  are also stored in the GIT repo which can be accessed using the ConfigServer.
+
+Create a spring boot project for eureka with eureka-server dependency
+
+1. Add @EnableEurekaServer
+
+2.spring.application.name=Eureka
+server.port=5555
+#becuase we only have one eureka
+eureka.client.fetch-registry=false
+eureka.client.register-with-eureka=false
+#as if we have multiple eureka's then every eureka act as client to another
+eureka.client.service-url.defaultZone=http://localhost:5555/eureka
+
+3. Add below dependency in all microservices.
+
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+4. @EnableDiscoveryClient In All Microservices in application
+
+5.Add whereabouts of eureka in git
+
+eureka.client.service-url.defaultZone=http://localhost:5555/eureka
+
+
+6. Autowire Discovery client in CustomerController class as @Autowired DiscoveryClient client;
+
+List<ServiceInstance> instances=client.getInstances("FRIEND");
+ServiceInstance instance=instances.get(0);
+URI friendUri = instance.getUri();
+
+Use this uri as FRIEND microservice is registered to Eureka so eureka knows the port.
+
+******************************************************************************************************
+1.
+register-with-eureka property when set to true ( which is by default ), will register an application with the Eureka Sever.
+
+Such an application is also called a Eureka Instance. The Eureka Instance will start sending heartbeats to the Eureka Server. 
+
+If the Eureka server does not receive heartbeats from an Instance within a configurable time limit ( every 30 secs by default),
+
+it considers the Instance to be down and deregisters it from the registry.
+
+2.
+
+The fetch-registry property will fetch the registry from the Eureka Sever once at startup time and will cache it. 
+
+It will check the Eureka Server at regular intervals ( by default at every 30 secs) to see if there are any changes.
+
+If there are changes, it fetches only the updates and the unchanged parts will be continued to be accessed from the cache.
+
+3.
+
+Every registered client gets access to what is known as a Discovery client.
+
+The discovery client is actually a service endpoint, which returns an enum of all ServiceInstance instances of the clients registered with the service registry.
